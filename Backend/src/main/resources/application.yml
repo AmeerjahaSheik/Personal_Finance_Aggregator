@@ -1,0 +1,54 @@
+spring:
+  application:
+    name: FinPilot
+
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/finpilot?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:Password@12}
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.MySQLDialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - openid
+              - profile
+              - email
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
+
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  expiration-ms: ${JWT_EXPIRATION_MS:86400000}
+
+app:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
+  chat:
+    ollama:
+      keep-alive: ${OLLAMA_KEEP_ALIVE:10m}
+
+plaid:
+  client-id: ${PLAID_CLIENT_ID:6aad00ae890dd9000c2d103d}
+  secret: ${PLAID_SECRET:b4c05ad107f8a7a27eb4447de26616}
+  env: ${PLAID_ENV:sandbox}
+  environment: ${PLAID_ENV:sandbox}
+
+ollama:
+  base-url: ${OLLAMA_BASE_URL:http://localhost:11434}
+  model: ${OLLAMA_MODEL:qwen3:1.7b}
+  timeout-seconds: ${OLLAMA_TIMEOUT_SECONDS:120}
+  connect-timeout-seconds: ${OLLAMA_CONNECT_TIMEOUT_SECONDS:10}

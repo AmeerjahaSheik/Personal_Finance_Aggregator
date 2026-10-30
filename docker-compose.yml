@@ -1,0 +1,66 @@
+services:
+
+  mysql:
+    image: mysql:8.4
+    container_name: finpilot-mysql
+    environment:
+      MYSQL_DATABASE: finpilot
+      MYSQL_ROOT_PASSWORD: root
+    ports:
+      - "3308:3306"
+    volumes:
+    
+      - mysql_data:/var/lib/mysql
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-proot"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: finpilot-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "ollama list || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  backend:
+    build:
+      context: ./Backend
+    container_name: finpilot-backend
+    ports:
+      - "8080:8080"
+
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/finpilot?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-291879075851-0jgeeeesv0vlepk1h4lvt8ed60202lp2.apps.googleusercontent.com}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-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}
+
+      OLLAMA_BASE_URL: http://ollama:11434
+      OLLAMA_MODEL: qwen3:1.7b
+
+    depends_on:
+      mysql:
+        condition: service_healthy
+      ollama:
+        condition: service_started
+
+    restart: unless-stopped
+
+
+volumes:
+  mysql_data:
+  ollama_data:
